@@ -149,3 +149,14 @@
     background: #94a3b8;
   }
 }
+
+/* Code block word wrap for mobile */
+.overflow-wrap-break-word {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+code {
+  white-space: pre-wrap !important;
+}

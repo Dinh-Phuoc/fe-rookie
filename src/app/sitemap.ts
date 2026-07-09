@@ -2,9 +2,24 @@ import type { MetadataRoute } from 'next';
 import { getFlashcards, getTopics } from '@/lib/api';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const [topics, flashcards] = await Promise.all([getTopics(), getFlashcards()]);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flashdev.local';
 
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flashdev.local';
+    const staticUrls: MetadataRoute.Sitemap = [
+        {
+            url: baseUrl,
+            changeFrequency: 'daily',
+            priority: 1,
+        },
+        {
+            url: `${baseUrl}/topics`,
+            changeFrequency: 'daily',
+            priority: 0.9,
+        },
+    ];
+
+    // Fetch dynamic content with error handling
+    try {
+        const [topics, flashcards] = await Promise.all([getTopics(), getFlashcards()]);
 
         const topicUrls: MetadataRoute.Sitemap = topics.data.items.map((topic) => ({
             url: `${baseUrl}/topics/${topic.slug}`,
@@ -18,18 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.7,
         }));
 
-        return [
-            {
-                url: baseUrl,
-                changeFrequency: 'daily',
-                priority: 1,
-            },
-            {
-                url: `${baseUrl}/topics`,
-                changeFrequency: 'daily',
-                priority: 0.9,
-            },
-        ...topicUrls,
-        ...flashcardUrls,
-    ];
+        return [...staticUrls, ...topicUrls, ...flashcardUrls];
+    } catch {
+        // Return static URLs if API is unavailable
+        return staticUrls;
+    }
 }

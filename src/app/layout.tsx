@@ -4,10 +4,11 @@ import './globals.css';
 import StyledRegistry from './styled-registry';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
+import { Providers } from '@/components/providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin', 'vietnamese'],
+  subsets: ['latin-ext'],
 });
 
 const geistMono = Geist_Mono({
@@ -50,11 +51,13 @@ export default function RootLayout({
     <html lang='vi' className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         <StyledRegistry>
-          <SiteHeader />
-          <div className='min-h-screen flex flex-col bg-background'>
-            {children}
-          </div>
-          <SiteFooter />
+          <Providers>
+            <SiteHeader />
+            <div className='min-h-screen flex flex-col bg-background'>
+              {children}
+            </div>
+            <SiteFooter />
+          </Providers>
         </StyledRegistry>
       </body>
     </html>

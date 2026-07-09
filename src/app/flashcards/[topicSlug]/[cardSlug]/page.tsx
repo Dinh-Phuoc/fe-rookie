@@ -1,57 +1,8 @@
 import Link from 'next/link';
-import styled from 'styled-components';
 import { notFound } from 'next/navigation';
-import { FlashcardCard } from '@/components/flashcard/flashcard-card';
+import { FlashcardDetailContent } from '@/components/flashcard-detail-content';
 import { getFlashcardDetail } from '@/lib/api';
 import type { Metadata } from 'next';
-
-const PageWrapper = styled.main`
-  min-height: 100vh;
-  background: #f8fafc;
-`;
-
-const PageHeader = styled.div`
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 20px;
-
-  @media (max-width: 640px) {
-    padding: 16px;
-  }
-`;
-
-const PageInner = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-`;
-
-const Breadcrumb = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-
-  a {
-    color: #3b82f6;
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const Content = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 32px 24px 64px;
-
-  @media (max-width: 640px) {
-    padding: 20px 16px 48px;
-  }
-`;
 
 type FlashcardDetailPageProps = {
   params: Promise<{ topicSlug: string; cardSlug: string }>;
@@ -80,32 +31,39 @@ export async function generateMetadata({ params }: FlashcardDetailPageProps): Pr
 
 export default async function FlashcardDetailPage({ params }: FlashcardDetailPageProps) {
   const { topicSlug, cardSlug } = await params;
-  let card;
 
+  // Validate card exists for 404
+  let cardExists = false;
   try {
-    const response = await getFlashcardDetail(topicSlug, cardSlug);
-    card = response.data;
+    await getFlashcardDetail(topicSlug, cardSlug);
+    cardExists = true;
   } catch {
+    cardExists = false;
+  }
+
+  if (!cardExists) {
     notFound();
   }
 
   return (
-    <PageWrapper>
-      <PageHeader>
-        <PageInner>
-          <Breadcrumb>
-            <Link href='/'>Trang chủ</Link>
+    <main className='min-h-screen bg-slate-50'>
+      {/* Header */}
+      <div className='border-b bg-white'>
+        <div className='mx-auto max-w-4xl px-4 py-5 sm:px-6'>
+          <div className='flex flex-wrap items-center gap-2 text-sm text-slate-500'>
+            <Link href='/' className='hover:text-blue-600'>Trang chủ</Link>
             <span>/</span>
-            <Link href={`/topics/${topicSlug}`}>{topicSlug}</Link>
+            <Link href={`/topics/${topicSlug}`} className='hover:text-blue-600'>
+              {topicSlug}
+            </Link>
             <span>/</span>
-            <span>{cardSlug}</span>
-          </Breadcrumb>
-        </PageInner>
-      </PageHeader>
+            <span className='text-slate-900'>{cardSlug}</span>
+          </div>
+        </div>
+      </div>
 
-      <Content>
-        <FlashcardCard card={card} />
-      </Content>
-    </PageWrapper>
+      {/* Content - Client component with TanStack Query */}
+      <FlashcardDetailContent topicSlug={topicSlug} cardSlug={cardSlug} />
+    </main>
   );
 }
